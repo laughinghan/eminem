@@ -98,7 +98,7 @@ function parse (emit) {
 }
 
 function codegen (emit) {
-  emit(require('fs').readFileSync('./runtime.js', { encoding: 'utf8' }) + '\n')
+  emit(require('fs').readFileSync('./runtime.js') + '\n')
   return function _codegen (stmt) {
     console.error('codegen:', stmt)
 
