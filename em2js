@@ -25,12 +25,19 @@ function parse (emit) {
     console.error('parsing:', token)
 
     if (token === '<EOF>' || token === ';' || token.slice(-1) === '\n') {
-      if (exprs.length === 1) {
-        emit(exprs.pop())
-      }
-      if (token === '<EOF>' && exprs.length !== 0) {
+      if (token.charAt(0) === '\\') return // line continuation
+      if (exprs.length === 0) return // empty line
+      if (token === '<EOF>') {
         console.error('exprs:', require('util').inspect(exprs, { depth: null }))
         throw 'Unexpected end of input'
+      }
+      if (exprs.slice(-1)[0].type === 'OpenGroup') return
+      if (exprs.length === 1) {
+        emit(exprs.pop())
+      } else if (exprs.length > 1) {
+        var group = exprs.slice(-2)[0]
+        if (group.type !== 'OpenGroup') throw 'Unexpected end of statement'
+        group.stmts.push(exprs.pop())
       }
       return
     }
@@ -60,11 +67,19 @@ function parse (emit) {
         newExpr = { type: 'Ident', value: token }
       }
     } else if (token === '(') {
-      exprs.push('(')
+      exprs.push({ type: 'OpenGroup', stmts: [] })
       return
     } else if (token === ')') {
       newExpr = exprs.pop()
-      if (exprs.pop() !== '(') throw 'Unmatched ")"'
+      if (!newExpr) throw 'Unmatched ")"'
+      if (newExpr.type !== 'OpenGroup') {
+        var group = exprs.pop()
+        if (group.type !== 'OpenGroup') throw 'Unmatched ")"'
+        group.stmts.push(newExpr)
+        newExpr = group
+      }
+      newExpr.type = 'Group'
+
       var peek = exprs.slice(-1)[0]
       if (peek && peek.type === 'Closure' && !peek.body) {
         peek.body = newExpr
@@ -74,7 +89,7 @@ function parse (emit) {
       throw 'Unexpected "'+token+'"'
     }
     var prevExpr = exprs.slice(-1)[0]
-    if (!prevExpr || prevExpr === '(') exprs.push(newExpr)
+    if (!prevExpr || prevExpr.type === 'OpenGroup') exprs.push(newExpr)
     else {
       exprs.pop()
       exprs.push({ type: 'FnCall', fn: prevExpr, arg: newExpr })
@@ -93,7 +108,18 @@ function codegen (emit) {
   }
   function outputExpr (expr) {
     emit('(')
-    if (expr.type === 'FnCall') {
+    if (expr.type === 'Group') {
+      if (expr.stmts.length === 0) emit('undefined')
+      else {
+        emit('(')
+        expr.stmts.slice(0, -1).forEach(function (stmt) {
+          outputExpr(stmt)
+          emit(', ')
+        })
+        outputExpr(expr.stmts.slice(-1)[0])
+        emit(')')
+      }
+    } else if (expr.type === 'FnCall') {
       outputExpr(expr.fn)
       outputExpr(expr.arg)
     } else if (expr.type === 'Closure') {
