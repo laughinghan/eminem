@@ -6,6 +6,10 @@
 // aka "semicolon-free"
 
 var scope = {} // global scope
+var $print = scope.$print = function(arg) {
+  process.stdout.write(''+arg)
+  return $print
+}
 var $println = scope.$println = function (arg) {
   console.log(''+arg)
   return $println
