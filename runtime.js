@@ -19,6 +19,24 @@ function Num (n) {
   }
 }
 
+var push = [].push
+function Closure (scope, args, fn) {
+  fn.toString = function () { return '<closure/' + this.args.length + '>' }
+  scope = Object.create(scope)
+  if (args.length > 1) {
+    return function (arg) {
+      return Closure(scope, args.slice(1), function (scope) {
+        scope['$'+args[0]] = arg
+        return fn(scope)
+      })
+    }
+  }
+  return function (arg) {
+    scope['$'+args] = arg
+    return fn(scope)
+  }
+}
+
 var scope = {} // global scope
 var $print = scope.$print = function(arg) {
   process.stdout.write(''+arg)

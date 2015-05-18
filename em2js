@@ -42,8 +42,18 @@ function parse (emit) {
     } else if (token === '.') {
       exprs.push('.')
       return
+    } else if (token === '^') {
+      var peek = exprs.slice(-1)[0]
+      if (!peek || peek.type !== 'Closure' || peek.body) {
+        exprs.push({ type: 'Closure', args: [] })
+      }
+      return
     } else if (/[a-z][a-z0-9]*/.test(token)) {
-      if (exprs.slice(-1)[0] === '.') {
+      var peek = exprs.slice(-1)[0]
+      if (peek && peek.type === 'Closure' && !peek.body) {
+        peek.args.push(token)
+        return
+      } else if (peek === '.') {
         exprs.pop()
         newExpr = { type: 'Atom', value: token }
       } else {
@@ -55,6 +65,11 @@ function parse (emit) {
     } else if (token === ')') {
       newExpr = exprs.pop()
       if (exprs.pop() !== '(') throw 'Unmatched ")"'
+      var peek = exprs.slice(-1)[0]
+      if (peek && peek.type === 'Closure' && !peek.body) {
+        peek.body = newExpr
+        newExpr = exprs.pop()
+      }
     } else {
       throw 'Unexpected "'+token+'"'
     }
@@ -81,6 +96,11 @@ function codegen (emit) {
     if (expr.type === 'FnCall') {
       outputExpr(expr.fn)
       outputExpr(expr.arg)
+    } else if (expr.type === 'Closure') {
+      emit('Closure(scope, "' + expr.args + '".split(","), ')
+      emit('function (scope) { return ')
+      outputExpr(expr.body)
+      emit(' })')
     } else if (expr.type === 'Ident') {
       emit('scope.$' + expr.value)
     } else if (expr.type === 'Atom') {
