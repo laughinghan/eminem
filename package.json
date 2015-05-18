@@ -1,0 +1,17 @@
+{
+  "name": "eminem",
+  "version": "0.0.0",
+  "description": "Emily compiler written in Emily (eventually)",
+  "bin": "./em2js",
+  "preferGlobal": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/laughinghan/eminem.git"
+  },
+  "author": "Han Seoul-Oh <laughinghan@gmail.com> (http://github.com/laughinghan)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/laughinghan/eminem/issues"
+  },
+  "homepage": "https://github.com/laughinghan/eminem"
+}

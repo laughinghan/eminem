@@ -1,0 +1,98 @@
+#!/usr/bin/env node
+// by Han Seoul-Oh <laughinghan@gmail.com> (http://github.com/laughinghan)
+
+// Coding Style: as a personal experiment, this script shall be written in
+// [npm's "funny" coding style](https://docs.npmjs.com/misc/coding-style)
+// aka "semicolon-free"
+
+var input = lex(parse(codegen(function output (o) { process.stdout.write(o) })))
+
+var data = ''
+process.stdin.setEncoding('utf8')
+process.stdin.on('readable', function () { data += process.stdin.read() || '' })
+process.stdin.on('end', function () { input(data) })
+
+function lex (emit) {
+  return function(source) {
+    (source+'\n').match(/[+-]?([0-9]+|[0-9]*\.[0-9]+)(e[+-]?[0-9]+)?|"([^"\\]|\\"|\\\\)*"|[a-z][a-z0-9]*|\\?[ \t]*(#[^\n]*)?\n|\S/ig).map(emit)
+    emit('<EOF>')
+  }
+}
+
+function parse (emit) {
+  var exprs = []
+  return function _parse (token) {
+    console.error('parsing:', token)
+
+    if (token === '<EOF>' || token === ';' || token.slice(-1) === '\n') {
+      if (exprs.length === 1) {
+        emit(exprs.pop())
+      }
+      if (token === '<EOF>' && exprs.length !== 0) {
+        console.error('exprs:', exprs)
+        throw 'Unexpected end of input'
+      }
+      return
+    }
+    var newExpr
+    if (!isNaN(parseFloat(token))) {
+      newExpr = { type: 'Num', value: parseFloat(token) }
+    } else if (token.charAt(0) === '"') {
+      newExpr = { type: 'Str', value: token.slice(1,-1).replace(/\\(["\\])/g, '$1') }
+    } else if (token === '.') {
+      exprs.push('.')
+      return
+    } else if (/[a-z][a-z0-9]*/.test(token)) {
+      if (exprs.slice(-1)[0] === '.') {
+        exprs.pop()
+        newExpr = { type: 'Atom', value: token }
+      } else {
+        newExpr = { type: 'Ident', value: token }
+      }
+    } else if (token === '(') {
+      exprs.push('(')
+      return
+    } else if (token === ')') {
+      newExpr = exprs.pop()
+      if (exprs.pop() !== '(') throw 'Unmatched ")"'
+    } else {
+      throw 'Unexpected "'+token+'"'
+    }
+    var prevExpr = exprs.slice(-1)[0]
+    if (!prevExpr || prevExpr === '(') exprs.push(newExpr)
+    else {
+      exprs.pop()
+      exprs.push({ type: 'FnCall', fn: prevExpr, arg: newExpr })
+    }
+  }
+}
+
+function codegen (emit) {
+  emit(require('fs').readFileSync('./runtime.js', { encoding: 'utf8' }) + '\n')
+  return function _codegen (stmt) {
+    console.error('codegen:', stmt)
+
+    emit(';')
+    outputExpr(stmt)
+    emit('\n')
+  }
+  function outputExpr (expr) {
+    emit('(')
+    if (expr.type === 'FnCall') {
+      outputExpr(expr.fn)
+      outputExpr(expr.arg)
+    } else if (expr.type === 'Ident') {
+      emit('scope.$' + expr.value)
+    } else if (expr.type === 'Atom') {
+      emit('"' + expr.value + '"')
+    } else if (expr.type === 'Str') {
+      emit('new String(' + JSON.stringify(expr.value) + ')')
+    } else if (expr.type === 'Num') {
+      emit(''+expr.value)
+    } else {
+      console.error('expr:', expr)
+      throw 'Invalid parse node encountered'
+    }
+    emit(')')
+  }
+}
