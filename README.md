@@ -1,5 +1,5 @@
 # Eminem
-[Emily](http://emilylang.com) compiler written in Emily (eventually)
+[Emily](http://emilylang.org) compiler written in Emily (eventually)
 
 First order of business is bootstrapping the compiler by writing a "native"
 `em2js` compiler in JavaScript, that compiles Emily to JavaScript. It's going
@@ -11,7 +11,7 @@ self-hosting compiler that initially only supports compiling to Node.js
 executables (but of course will eventually support other codegen backends).
 
 ### Differences from [canonical Emily][]
-[canonical Emily]: https://bitbucket.org/runhello/emily/src/stable/doc/tutorial.md
+[canonical Emily]: https://bitbucket.org/runhello/emily/src/stable/doc/manual.md
 
 Technically this is, and probably will for a while, actually implementing a
 dialect of the Emily language, with some significant differences from the
