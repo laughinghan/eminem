@@ -29,7 +29,7 @@ function parse (emit) {
         emit(exprs.pop())
       }
       if (token === '<EOF>' && exprs.length !== 0) {
-        console.error('exprs:', exprs)
+        console.error('exprs:', require('util').inspect(exprs, { depth: null }))
         throw 'Unexpected end of input'
       }
       return
