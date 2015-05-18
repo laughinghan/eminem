@@ -88,7 +88,7 @@ function codegen (emit) {
     } else if (expr.type === 'Str') {
       emit('new String(' + JSON.stringify(expr.value) + ')')
     } else if (expr.type === 'Num') {
-      emit(''+expr.value)
+      emit('Num(' + expr.value + ')')
     } else {
       console.error('expr:', expr)
       throw 'Invalid parse node encountered'

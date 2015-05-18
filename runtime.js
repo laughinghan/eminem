@@ -5,6 +5,20 @@
 // [npm's "funny" coding style](https://docs.npmjs.com/misc/coding-style)
 // aka "semicolon-free"
 
+function Num (n) {
+  num.n = n
+  num.toString = function () { return n }
+  return num
+  function num (atom) {
+    if (atom === 'plus')   return function (other) { return Num(n + other.n) }
+    if (atom === 'minus')  return function (other) { return Num(n - other.n) }
+    if (atom === 'times')  return function (other) { return Num(n * other.n) }
+    if (atom === 'divide') return function (other) { return Num(n / other.n) }
+    if (atom === 'mod')    return function (other) { return Num(n % other.n) }
+    throw n + ' can\'t respond to ' + atom
+  }
+}
+
 var scope = {} // global scope
 var $print = scope.$print = function(arg) {
   process.stdout.write(''+arg)
