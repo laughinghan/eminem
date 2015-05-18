@@ -44,3 +44,6 @@ parse trees, respectively.
 ### Author
 
 A Very Serious and Important Project by [Han](http://github.com/laughinghan)
+
+Based on [@mcclure111](https://twitter.com/mcclure111)'s delightful experimental
+programming language [Emily](http://emilylang.org)
