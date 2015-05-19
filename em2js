@@ -26,6 +26,7 @@ function parse (emit) {
   return function _parse (token) {
     console.error('parsing:', token)
 
+    // statement terminators
     if (token === '<EOF>' || token === ';' || token.slice(-1) === '\n') {
       if (token.charAt(0) === '\\') return // line continuation
       if (exprs.length === 0) return // empty line
@@ -43,6 +44,8 @@ function parse (emit) {
       }
       return
     }
+
+    // tokens
     var newExpr
     if (!isNaN(parseFloat(token))) {
       newExpr = { type: 'Num', value: parseFloat(token) }
@@ -90,6 +93,8 @@ function parse (emit) {
     } else {
       throw 'Unexpected "'+token+'"'
     }
+
+    // function calls
     var prevExpr = exprs.slice(-1)[0]
     if (!prevExpr || prevExpr.type === 'OpenGroup') exprs.push(newExpr)
     else {
