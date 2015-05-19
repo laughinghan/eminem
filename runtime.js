@@ -42,10 +42,6 @@ var $print = scope.$print = function(arg) {
   process.stdout.write(''+arg)
   return $print
 }
-var $println = scope.$println = function (arg) {
-  console.log(''+arg)
-  return $println
-}
 scope.$let = function (atom) {
   if (typeof atom !== 'string') throw 'Can only assign to names that are atoms'
   return function (arg) {

@@ -10,7 +10,9 @@ var input = lex(parse(codegen(function output (o) { process.stdout.write(o) })))
 var data = ''
 process.stdin.setEncoding('utf8')
 process.stdin.on('readable', function () { data += process.stdin.read() || '' })
-process.stdin.on('end', function () { input(data) })
+process.stdin.on('end', function () {
+  input(require('fs').readFileSync('./builtins.em') + data)
+})
 
 function lex (emit) {
   return function(source) {
