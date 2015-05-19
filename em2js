@@ -57,7 +57,7 @@ function parse (emit) {
         exprs.push({ type: 'Closure', args: [] })
       }
       return
-    } else if (/[a-z][a-z0-9]*/.test(token)) {
+    } else if (/^[a-z][a-z0-9]*$/i.test(token)) {
       var peek = exprs.slice(-1)[0]
       if (peek && peek.type === 'Closure' && !peek.body) {
         peek.args.push(token)
