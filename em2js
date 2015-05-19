@@ -46,11 +46,11 @@ function parse (emit) {
     }
 
     // tokens
-    var newExpr
+    var nextExpr
     if (!isNaN(parseFloat(token))) {
-      newExpr = { type: 'Num', value: parseFloat(token) }
+      nextExpr = { type: 'Num', value: parseFloat(token) }
     } else if (token.charAt(0) === '"') {
-      newExpr = { type: 'Str', value: token.slice(1,-1).replace(/\\(["\\])/g, '$1') }
+      nextExpr = { type: 'Str', value: token.slice(1,-1).replace(/\\(["\\])/g, '$1') }
     } else if (token === '.') {
       stack.push('.')
       return
@@ -67,28 +67,28 @@ function parse (emit) {
         return
       } else if (peek === '.') {
         stack.pop()
-        newExpr = { type: 'Atom', value: token }
+        nextExpr = { type: 'Atom', value: token }
       } else {
-        newExpr = { type: 'Ident', value: token }
+        nextExpr = { type: 'Ident', value: token }
       }
     } else if (token === '(') {
       stack.push({ type: 'OpenGroup', stmts: [] })
       return
     } else if (token === ')') {
-      newExpr = stack.pop()
-      if (!newExpr) throw 'Unmatched ")"'
-      if (newExpr.type !== 'OpenGroup') {
+      nextExpr = stack.pop()
+      if (!nextExpr) throw 'Unmatched ")"'
+      if (nextExpr.type !== 'OpenGroup') {
         var group = stack.pop()
         if (group.type !== 'OpenGroup') throw 'Unmatched ")"'
-        group.stmts.push(newExpr)
-        newExpr = group
+        group.stmts.push(nextExpr)
+        nextExpr = group
       }
-      newExpr.type = 'Group'
+      nextExpr.type = 'Group'
 
       var peek = stack.slice(-1)[0]
       if (peek && peek.type === 'Closure' && !peek.body) {
-        peek.body = newExpr
-        newExpr = stack.pop()
+        peek.body = nextExpr
+        nextExpr = stack.pop()
       }
     } else {
       throw 'Unexpected "'+token+'"'
@@ -96,10 +96,10 @@ function parse (emit) {
 
     // function calls
     var prevExpr = stack.slice(-1)[0]
-    if (!prevExpr || prevExpr.type === 'OpenGroup') stack.push(newExpr)
+    if (!prevExpr || prevExpr.type === 'OpenGroup') stack.push(nextExpr)
     else {
       stack.pop()
-      stack.push({ type: 'FnCall', fn: prevExpr, arg: newExpr })
+      stack.push({ type: 'FnCall', fn: prevExpr, arg: nextExpr })
     }
   }
 }
