@@ -22,25 +22,25 @@ function lex (emit) {
 }
 
 function parse (emit) {
-  var exprs = []
+  var stack = []
   return function _parse (token) {
     console.error('parsing:', token)
 
     // statement terminators
     if (token === '<EOF>' || token === ';' || token.slice(-1) === '\n') {
       if (token.charAt(0) === '\\') return // line continuation
-      if (exprs.length === 0) return // empty line
+      if (stack.length === 0) return // empty line
       if (token === '<EOF>') {
-        console.error('exprs:', require('util').inspect(exprs, { depth: null }))
+        console.error('stack:', require('util').inspect(stack, { depth: null }))
         throw 'Unexpected end of input'
       }
-      if (exprs.slice(-1)[0].type === 'OpenGroup') return
-      if (exprs.length === 1) {
-        emit(exprs.pop())
-      } else if (exprs.length > 1) {
-        var group = exprs.slice(-2)[0]
+      if (stack.slice(-1)[0].type === 'OpenGroup') return
+      if (stack.length === 1) {
+        emit(stack.pop())
+      } else if (stack.length > 1) {
+        var group = stack.slice(-2)[0]
         if (group.type !== 'OpenGroup') throw 'Unexpected end of statement'
-        group.stmts.push(exprs.pop())
+        group.stmts.push(stack.pop())
       }
       return
     }
@@ -52,54 +52,54 @@ function parse (emit) {
     } else if (token.charAt(0) === '"') {
       newExpr = { type: 'Str', value: token.slice(1,-1).replace(/\\(["\\])/g, '$1') }
     } else if (token === '.') {
-      exprs.push('.')
+      stack.push('.')
       return
     } else if (token === '^') {
-      var peek = exprs.slice(-1)[0]
+      var peek = stack.slice(-1)[0]
       if (!peek || peek.type !== 'Closure' || peek.body) {
-        exprs.push({ type: 'Closure', args: [] })
+        stack.push({ type: 'Closure', args: [] })
       }
       return
     } else if (/^[a-z][a-z0-9]*$/i.test(token)) {
-      var peek = exprs.slice(-1)[0]
+      var peek = stack.slice(-1)[0]
       if (peek && peek.type === 'Closure' && !peek.body) {
         peek.args.push(token)
         return
       } else if (peek === '.') {
-        exprs.pop()
+        stack.pop()
         newExpr = { type: 'Atom', value: token }
       } else {
         newExpr = { type: 'Ident', value: token }
       }
     } else if (token === '(') {
-      exprs.push({ type: 'OpenGroup', stmts: [] })
+      stack.push({ type: 'OpenGroup', stmts: [] })
       return
     } else if (token === ')') {
-      newExpr = exprs.pop()
+      newExpr = stack.pop()
       if (!newExpr) throw 'Unmatched ")"'
       if (newExpr.type !== 'OpenGroup') {
-        var group = exprs.pop()
+        var group = stack.pop()
         if (group.type !== 'OpenGroup') throw 'Unmatched ")"'
         group.stmts.push(newExpr)
         newExpr = group
       }
       newExpr.type = 'Group'
 
-      var peek = exprs.slice(-1)[0]
+      var peek = stack.slice(-1)[0]
       if (peek && peek.type === 'Closure' && !peek.body) {
         peek.body = newExpr
-        newExpr = exprs.pop()
+        newExpr = stack.pop()
       }
     } else {
       throw 'Unexpected "'+token+'"'
     }
 
     // function calls
-    var prevExpr = exprs.slice(-1)[0]
-    if (!prevExpr || prevExpr.type === 'OpenGroup') exprs.push(newExpr)
+    var prevExpr = stack.slice(-1)[0]
+    if (!prevExpr || prevExpr.type === 'OpenGroup') stack.push(newExpr)
     else {
-      exprs.pop()
-      exprs.push({ type: 'FnCall', fn: prevExpr, arg: newExpr })
+      stack.pop()
+      stack.push({ type: 'FnCall', fn: prevExpr, arg: newExpr })
     }
   }
 }
