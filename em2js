@@ -105,29 +105,29 @@ function codegen (emit) {
     console.error('codegen:', stmt)
 
     emit(';')
-    outputExpr(stmt)
+    emitExpr(stmt)
     emit('\n')
   }
-  function outputExpr (expr) {
+  function emitExpr (expr) {
     emit('(')
     if (expr.type === 'Group') {
       if (expr.stmts.length === 0) emit('undefined')
       else {
         emit('(')
         expr.stmts.slice(0, -1).forEach(function (stmt) {
-          outputExpr(stmt)
+          emitExpr(stmt)
           emit(', ')
         })
-        outputExpr(expr.stmts.slice(-1)[0])
+        emitExpr(expr.stmts.slice(-1)[0])
         emit(')')
       }
     } else if (expr.type === 'FnCall') {
-      outputExpr(expr.fn)
-      outputExpr(expr.arg)
+      emitExpr(expr.fn)
+      emitExpr(expr.arg)
     } else if (expr.type === 'Closure') {
       emit('Closure(scope, "' + expr.args + '".split(","), ')
       emit('function (scope) { return ')
-      outputExpr(expr.body)
+      emitExpr(expr.body)
       emit(' })')
     } else if (expr.type === 'Ident') {
       emit('scope.$' + expr.value)
