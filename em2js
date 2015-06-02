@@ -130,7 +130,7 @@ function codegen (emit) {
       emitExpr(expr.fn)
       emitExpr(expr.arg)
     } else if (expr.type === 'Closure') {
-      emit('Closure(scope, "' + expr.args + '".split(","), ')
+      emit('Closure(scope, ' + JSON.stringify(expr.args) + ', ')
       emit('function (scope) { return ')
       emitExpr(expr.body)
       emit(' })')

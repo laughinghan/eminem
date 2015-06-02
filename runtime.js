@@ -29,18 +29,17 @@ function Num (n) {
 var push = [].push
 function Closure (scope, args, fn) {
   fn.toString = function () { return '<closure/' + this.args.length + '>' }
-  scope = Object.create(scope)
   if (args.length > 1) {
     return function (arg) {
-      return Closure(scope, args.slice(1), function (scope) {
-        scope['$'+args[0]] = arg
-        return fn(scope)
-      })
+      var innerScope = Object.create(scope)
+      innerScope['$'+args[0]] = arg
+      return Closure(innerScope, args.slice(1), fn)
     }
   }
   return function (arg) {
-    scope['$'+args] = arg
-    return fn(scope)
+    var innerScope = Object.create(scope)
+    if (args.length === 1) innerScope['$'+args] = arg
+    return fn(innerScope)
   }
 }
 
