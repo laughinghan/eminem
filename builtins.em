@@ -8,3 +8,15 @@ let .println (fix ^println \
     println
   )
 )
+
+let .do ^f (f())
+
+let .if ^condition consequent (
+  tern condition consequent ^()
+)
+
+let .loop (fix ^loop \
+  ^iter (
+    if (do iter) ^(loop iter)
+  )
+)
