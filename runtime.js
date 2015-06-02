@@ -5,11 +5,18 @@
 // [npm's "funny" coding style](https://docs.npmjs.com/misc/coding-style)
 // aka "semicolon-free"
 
+function bool (value) { return value ? $true : $null }
+
 function Num (n) {
   num.n = n
   num.toString = function () { return n }
   return num
   function num (atom) {
+    if (atom === 'eq')  return function (other) { return bool(n === other.n) }
+    if (atom === 'lt')  return function (other) { return bool(n < other.n) }
+    if (atom === 'lte') return function (other) { return bool(n <= other.n) }
+    if (atom === 'gt')  return function (other) { return bool(n > other.n) }
+    if (atom === 'gte') return function (other) { return bool(n >= other.n) }
     if (atom === 'plus')   return function (other) { return Num(n + other.n) }
     if (atom === 'minus')  return function (other) { return Num(n - other.n) }
     if (atom === 'times')  return function (other) { return Num(n * other.n) }
@@ -41,9 +48,15 @@ var scope = {} // global scope
 
 // built-in globals
 var $null = scope.$null = function (atom) {
+  if (atom === 'eq') return function (arg) { return bool(arg === $null) }
   throw '<null> can\'t respond to ' + atom
 }
 $null.toString = function () { return '<null>' }
+var $true = scope.$true = function (atom) {
+  if (atom === 'eq') return function (arg) { return bool(arg === $true) }
+  throw n + ' can\'t respond to ' + atom
+}
+$true.toString = function () { return '<true>' }
 
 // built-in global fns
 var $print = scope.$print = function(arg) {
@@ -57,3 +70,6 @@ scope.$let = function (atom) {
     return $null
   }
 }
+scope.$tern = Closure(scope, ['condition', 'consequent', 'alternative'], function (scope) {
+  return scope.$condition !== $null ? scope.$consequent($null) : scope.$alternative($null)
+})
