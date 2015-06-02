@@ -38,6 +38,14 @@ function Closure (scope, args, fn) {
 }
 
 var scope = {} // global scope
+
+// built-in globals
+var $null = scope.$null = function (atom) {
+  throw '<null> can\'t respond to ' + atom
+}
+$null.toString = function () { return '<null>' }
+
+// built-in global fns
 var $print = scope.$print = function(arg) {
   process.stdout.write(''+arg)
   return $print
@@ -46,5 +54,6 @@ scope.$let = function (atom) {
   if (typeof atom !== 'string') throw 'Can only assign to names that are atoms'
   return function (arg) {
     scope['$'+atom] = arg
+    return $null
   }
 }

@@ -116,7 +116,7 @@ function codegen (emit) {
   function emitExpr (expr) {
     emit('(')
     if (expr.type === 'Group') {
-      if (expr.stmts.length === 0) emit('undefined')
+      if (expr.stmts.length === 0) emit('$null')
       else {
         emit('(')
         expr.stmts.slice(0, -1).forEach(function (stmt) {
