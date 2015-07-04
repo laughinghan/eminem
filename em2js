@@ -5,6 +5,12 @@
 // [npm's "funny" coding style](https://docs.npmjs.com/misc/coding-style)
 // aka "semicolon-free"
 
+if (process.argv.length > 2) {
+  // common mistake: `./em2js file.em` instead of `./em2js < file.em`
+  console.error('Unexpected command-line arguments:', process.argv.slice(2))
+  process.exit(1)
+}
+
 var input = lex(parse(codegen(function output (o) { process.stdout.write(o) })))
 
 var data = ''
