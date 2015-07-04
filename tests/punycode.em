@@ -1,0 +1,5 @@
+let .punycode (ffi.module.require "punycode")
+println(punycode.decode "maana-pta")
+println(punycode.decode "--dqo34k")
+println(punycode.encode "mañana")
+println(punycode.encode "☃-⌘")
