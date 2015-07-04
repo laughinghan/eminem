@@ -8,20 +8,19 @@
 function bool (value) { return value ? $true : $null }
 
 function Num (n) {
-  num.n = n
-  num.toString = function () { return n }
+  num.valueOf = function () { return n }
   return num
   function num (atom) {
-    if (atom === 'eq')  return function (other) { return bool(n === other.n) }
-    if (atom === 'lt')  return function (other) { return bool(n < other.n) }
-    if (atom === 'lte') return function (other) { return bool(n <= other.n) }
-    if (atom === 'gt')  return function (other) { return bool(n > other.n) }
-    if (atom === 'gte') return function (other) { return bool(n >= other.n) }
-    if (atom === 'plus')   return function (other) { return Num(n + other.n) }
-    if (atom === 'minus')  return function (other) { return Num(n - other.n) }
-    if (atom === 'times')  return function (other) { return Num(n * other.n) }
-    if (atom === 'divide') return function (other) { return Num(n / other.n) }
-    if (atom === 'mod')    return function (other) { return Num(n % other.n) }
+    if (atom === 'eq')  return function (other) { return bool(+num === +other) }
+    if (atom === 'lt')  return function (other) { return bool(num < other) }
+    if (atom === 'lte') return function (other) { return bool(num <= other) }
+    if (atom === 'gt')  return function (other) { return bool(num > other) }
+    if (atom === 'gte') return function (other) { return bool(num >= other) }
+    if (atom === 'plus')   return function (other) { return Num(num + other) }
+    if (atom === 'minus')  return function (other) { return Num(num - other) }
+    if (atom === 'times')  return function (other) { return Num(num * other) }
+    if (atom === 'divide') return function (other) { return Num(num / other) }
+    if (atom === 'mod')    return function (other) { return Num(num % other) }
     throw n + ' can\'t respond to ' + atom
   }
 }
